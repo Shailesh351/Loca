@@ -1,4 +1,4 @@
-package com.shell.loca;
+package com.shell.loca.activity;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -14,13 +14,15 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.shell.loca.R;
 
-public class log_in_activity extends AppCompatActivity {
+public class LogInActivity extends AppCompatActivity {
 
     int PRIVATE_MODE = 0;
     public static final String PREF_NAME = "LOCA";
     public static final String IS_LOGIN = "is_logged_in";
     public static final String KEY_MOBILE_NUMBER = "user_mobile_number";
+    public static final String KEY_NAME = "user_name";
 
     private SharedPreferences mPref;
     private SharedPreferences.Editor mEditor;
@@ -31,7 +33,7 @@ public class log_in_activity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_log_in_activity);
+        setContentView(R.layout.activity_log_in);
 
         FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
         final DatabaseReference mDatabaseReference = mFirebaseDatabase.getReference();
@@ -58,16 +60,17 @@ public class log_in_activity extends AppCompatActivity {
                                 public void onDataChange(DataSnapshot dataSnapshot) {
                                     if(dataSnapshot.getValue() != null){
                                         //user exists
-                                        Toast.makeText(log_in_activity.this, "user already exists", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(LogInActivity.this, "user already exists", Toast.LENGTH_SHORT).show();
                                     }else{
                                         //user not exists
                                         mDatabaseReference.child("users").child(mobileNo).child("name").setValue(name);
                                         mEditor.clear();
                                         mEditor.putString(KEY_MOBILE_NUMBER, mobileNo);
+                                        mEditor.putString(KEY_NAME,name);
                                         mEditor.putString(IS_LOGIN, "true");
                                         mEditor.commit();
-                                        Toast.makeText(log_in_activity.this, "Logged in", Toast.LENGTH_SHORT).show();
-                                        startActivity(new Intent(log_in_activity.this,MainActivity.class));
+                                        Toast.makeText(LogInActivity.this, "Logged in", Toast.LENGTH_SHORT).show();
+                                        startActivity(new Intent(LogInActivity.this,MainActivity.class));
                                         finish();
                                     }
                                 }
@@ -93,16 +96,17 @@ public class log_in_activity extends AppCompatActivity {
                                 public void onDataChange(DataSnapshot dataSnapshot) {
                                     if(dataSnapshot.getValue() == null){
                                         //user not exists
-                                        Toast.makeText(log_in_activity.this, "Sign up first", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(LogInActivity.this, "Sign up first", Toast.LENGTH_SHORT).show();
                                     }else{
                                         //user exists
                                         mDatabaseReference.child("users").child(mobileNo).child("name").setValue(name);
                                         mEditor.clear();
                                         mEditor.putString(KEY_MOBILE_NUMBER, mobileNo);
+                                        mEditor.putString(KEY_NAME,name);
                                         mEditor.putString(IS_LOGIN, "true");
                                         mEditor.commit();
-                                        Toast.makeText(log_in_activity.this, "Signed in", Toast.LENGTH_SHORT).show();
-                                        startActivity(new Intent(log_in_activity.this,MainActivity.class));
+                                        Toast.makeText(LogInActivity.this, "Signed in", Toast.LENGTH_SHORT).show();
+                                        startActivity(new Intent(LogInActivity.this,MainActivity.class));
                                         finish();
                                     }
                                 }

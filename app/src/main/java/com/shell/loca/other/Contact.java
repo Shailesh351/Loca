@@ -1,4 +1,4 @@
-package com.shell.loca;
+package com.shell.loca.other;
 
 /**
  * Created by shell on 11/11/16.

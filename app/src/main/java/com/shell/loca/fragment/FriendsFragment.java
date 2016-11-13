@@ -1,20 +1,21 @@
-package com.shell.loca;
+package com.shell.loca.fragment;
 
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
-import android.support.v7.app.AppCompatActivity;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,11 +24,18 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.shell.loca.R;
+import com.shell.loca.activity.LogInActivity;
+import com.shell.loca.activity.MainActivity;
+import com.shell.loca.other.Contact;
+import com.shell.loca.other.ContactsAdapter;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class FriendsFragment extends Fragment {
 
     public static final String PREF_NAME = "LOCA";
     public static final String IS_LOGIN = "is_logged_in";
@@ -37,60 +45,49 @@ public class MainActivity extends AppCompatActivity {
     private SharedPreferences mPref;
     private SharedPreferences.Editor mEditor;
 
+    private DatabaseReference mDatabaseReference;
+    private FirebaseDatabase mFirebaseDatabase;
+
     private RecyclerView mRecyclerView;
 
     private TextView mTextView;
     private ArrayList<Contact> mContactsList;
     private ContactsAdapter mAdapter;
 
-    private DatabaseReference mDatabaseReference;
-    private FirebaseDatabase mFirebaseDatabase;
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.fragment_friends, container, false);
+    }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
 
         mFirebaseDatabase = FirebaseDatabase.getInstance();
         mDatabaseReference = mFirebaseDatabase.getReference();
 
-        mPref = getApplicationContext().getSharedPreferences(PREF_NAME, PRIVATE_MODE);
+        mPref = getActivity().getApplicationContext().getSharedPreferences(PREF_NAME, PRIVATE_MODE);
         mEditor = mPref.edit();
-
-        mTextView = (TextView) findViewById(R.id.text_view);
 
         mContactsList = new ArrayList<>();
 
-        mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
-
-        String isLoggedIn = mPref.getString(IS_LOGIN, null);
-
-        if (isLoggedIn == null) {
-            startActivity(new Intent(this, log_in_activity.class));
-            finish();
-        } else {
-            mTextView.setText(mPref.getString(KEY_MOBILE_NUMBER, null));
-        }
+        mRecyclerView = (RecyclerView) getActivity().findViewById(R.id.recycler_view);
 
         mContactsList = getContacts();
 
         mAdapter = new ContactsAdapter(mContactsList);
-        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity().getApplicationContext());
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.setAdapter(mAdapter);
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
-
-
     private ArrayList<Contact> getContacts() {
         final ArrayList<Contact> mContacts = new ArrayList<>();
 
-        ContentResolver cr = getContentResolver();
+        ContentResolver cr = getActivity().getContentResolver();
         Cursor contacts = cr.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
 
         // use the cursor to access the contacts
@@ -102,6 +99,7 @@ public class MainActivity extends AppCompatActivity {
             //get mobile number
             String mobileNo = contacts.getString(contacts.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
 
+            // trim mobile number
             mobileNo = mobileNo.replace(" ", "");
             mobileNo = mobileNo.replace("-", "");
             mobileNo = mobileNo.replace("+91", "");
@@ -111,6 +109,8 @@ public class MainActivity extends AppCompatActivity {
             }
 
             final String finalPhoneNumber = mobileNo;
+
+            //check if user exist or not
             mDatabaseReference.child("users").child(mobileNo)
                     .addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
@@ -120,7 +120,6 @@ public class MainActivity extends AppCompatActivity {
                                 if (!isContainsContact(mContacts,finalPhoneNumber)) {
                                     mContacts.add(new Contact(name, finalPhoneNumber));
                                     mAdapter.notifyDataSetChanged();
-                                    Toast.makeText(MainActivity.this, name, Toast.LENGTH_SHORT).show();
                                 }
                             }
                         }
@@ -130,6 +129,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
         }
+
         return mContacts;
     }
 
@@ -140,25 +140,5 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         return false;
-    }
-
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = new MenuInflater(this);
-        inflater.inflate(R.menu.main_menu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.menu_item_log_out:
-                mEditor.clear();
-                mEditor.commit();
-                startActivity(new Intent(MainActivity.this, log_in_activity.class));
-                finish();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
     }
 }
