@@ -1,12 +1,9 @@
 package com.shell.loca.activity;
 
-import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
-import android.provider.ContactsContract;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -14,31 +11,18 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.shell.loca.R;
 import com.shell.loca.fragment.FriendsFragment;
 import com.shell.loca.fragment.HomeFragment;
 import com.shell.loca.fragment.InviteFragment;
-import com.shell.loca.other.Contact;
-import com.shell.loca.other.ContactsAdapter;
-import com.shell.loca.R;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -46,26 +30,21 @@ public class MainActivity extends AppCompatActivity {
     public static final String IS_LOGIN = "is_logged_in";
     public static final String KEY_MOBILE_NUMBER = "user_mobile_number";
     public static final String KEY_NAME = "user_name";
+    // tags used to attach the fragments
+    private static final String TAG_HOME = "home";
+    private static final String TAG_FRIENDS = "friends";
+    private static final String TAG_INVITE = "invite";
+    // index to identify current nav menu item
+    public static int navItemIndex = 0;
+    public static String CURRENT_TAG = TAG_HOME;
     int PRIVATE_MODE = 0;
-
     private SharedPreferences mPref;
     private SharedPreferences.Editor mEditor;
-
     private NavigationView navigationView;
     private TextView textName, textMobileNo;
     private DrawerLayout drawer;
     private View navHeader;
     private Toolbar toolbar;
-
-    // index to identify current nav menu item
-    public static int navItemIndex = 0;
-
-    // tags used to attach the fragments
-    private static final String TAG_HOME = "home";
-    private static final String TAG_FRIENDS = "friends";
-    private static final String TAG_INVITE = "invite";
-    public static String CURRENT_TAG = TAG_HOME;
-
     // toolbar titles respected to selected nav menu item
     private String[] activityTitles;
 
@@ -89,6 +68,8 @@ public class MainActivity extends AppCompatActivity {
         } else {
             //mTextView.setText(mPref.getString(KEY_MOBILE_NUMBER, null));
         }
+
+        FirebaseDatabase.getInstance().setPersistenceEnabled(true);
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);

@@ -1,11 +1,8 @@
 package com.shell.loca.fragment;
 
 import android.content.ContentResolver;
-import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.annotation.Nullable;
@@ -16,8 +13,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -25,14 +20,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.shell.loca.R;
-import com.shell.loca.activity.LogInActivity;
-import com.shell.loca.activity.MainActivity;
 import com.shell.loca.other.Contact;
 import com.shell.loca.other.ContactsAdapter;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 public class FriendsFragment extends Fragment {
@@ -40,18 +31,16 @@ public class FriendsFragment extends Fragment {
     public static final String PREF_NAME = "LOCA";
     public static final String IS_LOGIN = "is_logged_in";
     public static final String KEY_MOBILE_NUMBER = "user_mobile_number";
+    public static final String KEY_NAME = "user_name";
     int PRIVATE_MODE = 0;
 
     private SharedPreferences mPref;
-    private SharedPreferences.Editor mEditor;
 
     private DatabaseReference mDatabaseReference;
     private FirebaseDatabase mFirebaseDatabase;
 
     private RecyclerView mRecyclerView;
 
-    private TextView mTextView;
-    private ArrayList<Contact> mContactsList;
     private ContactsAdapter mAdapter;
 
     @Override
@@ -69,23 +58,21 @@ public class FriendsFragment extends Fragment {
         mDatabaseReference = mFirebaseDatabase.getReference();
 
         mPref = getActivity().getApplicationContext().getSharedPreferences(PREF_NAME, PRIVATE_MODE);
-        mEditor = mPref.edit();
-
-        mContactsList = new ArrayList<>();
 
         mRecyclerView = (RecyclerView) getActivity().findViewById(R.id.recycler_view);
 
-        mContactsList = getContacts();
+        getContactsList();
 
-        mAdapter = new ContactsAdapter(mContactsList);
+        mAdapter = new ContactsAdapter(getLayoutInflater(null), null);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity().getApplicationContext());
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.setAdapter(mAdapter);
     }
 
-    private ArrayList<Contact> getContacts() {
+    private void getContactsList() {
         final ArrayList<Contact> mContacts = new ArrayList<>();
+        mContacts.add(new Contact(mPref.getString(KEY_NAME, null),mPref.getString(KEY_MOBILE_NUMBER, null)));
 
         ContentResolver cr = getActivity().getContentResolver();
         Cursor contacts = cr.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
@@ -118,8 +105,8 @@ public class FriendsFragment extends Fragment {
                             if (dataSnapshot.getValue() != null) {
                                 //user exists
                                 if (!isContainsContact(mContacts,finalPhoneNumber)) {
+                                    mAdapter.addItem(new Contact(name,finalPhoneNumber));
                                     mContacts.add(new Contact(name, finalPhoneNumber));
-                                    mAdapter.notifyDataSetChanged();
                                 }
                             }
                         }
@@ -129,8 +116,6 @@ public class FriendsFragment extends Fragment {
                         }
                     });
         }
-
-        return mContacts;
     }
 
     public boolean isContainsContact(List<Contact> list, String mobileNo) {
