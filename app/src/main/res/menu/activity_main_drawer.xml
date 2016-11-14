@@ -10,9 +10,16 @@
             android:id="@+id/nav_friends"
             android:icon="@drawable/ic_view_list"
             android:title="@string/nav_friends" />
-        <item
-            android:id="@+id/nav_invite"
-            android:title="@string/nav_invite" />
     </group>
 
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_invite"
+            android:icon="@drawable/ic_invite"
+            android:title="@string/nav_invite" />
+        <item
+            android:id="@+id/nav_log_out"
+            android:icon="@drawable/ic_log_out"
+            android:title="Log out" />
+    </group>
 </menu>

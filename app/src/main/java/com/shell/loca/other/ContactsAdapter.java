@@ -3,12 +3,15 @@ package com.shell.loca.other;
 import android.support.v7.util.SortedList;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.util.SortedListAdapterCallback;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.shell.loca.R;
+import com.shell.loca.activity.MainActivity;
 
 /**
  * Created by shell on 11/11/16.
@@ -82,13 +85,19 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.Contac
         }
     }
 
-    public abstract class ContactViewHolder extends RecyclerView.ViewHolder {
+    public abstract class ContactViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView mTextViewName, mTextViewMobileNo;
 
         public ContactViewHolder(View itemView) {
             super(itemView);
             mTextViewName = (TextView) itemView.findViewById(R.id.listItemContactName);
+            mTextViewName.setOnClickListener(this);
             mTextViewMobileNo = (TextView) itemView.findViewById(R.id.listItemMobileNo);
+        }
+
+        @Override
+        public void onClick(View view) {
+            Log.d("CLick", "onClick " + getPosition() + " " + mTextViewName.getText());
         }
 
         abstract void onDoneChanged(boolean isDone);

@@ -1,10 +1,15 @@
 package com.shell.loca.activity;
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
@@ -17,12 +22,15 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.shell.loca.R;
 import com.shell.loca.fragment.FriendsFragment;
 import com.shell.loca.fragment.HomeFragment;
 import com.shell.loca.fragment.InviteFragment;
+import com.shell.loca.other.Utils;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -30,21 +38,29 @@ public class MainActivity extends AppCompatActivity {
     public static final String IS_LOGIN = "is_logged_in";
     public static final String KEY_MOBILE_NUMBER = "user_mobile_number";
     public static final String KEY_NAME = "user_name";
+
     // tags used to attach the fragments
     private static final String TAG_HOME = "home";
     private static final String TAG_FRIENDS = "friends";
     private static final String TAG_INVITE = "invite";
+
     // index to identify current nav menu item
     public static int navItemIndex = 0;
     public static String CURRENT_TAG = TAG_HOME;
+
     int PRIVATE_MODE = 0;
     private SharedPreferences mPref;
     private SharedPreferences.Editor mEditor;
+
+    private DatabaseReference mDatabaseReference;
+    private FirebaseDatabase mFirebaseDatabase;
+
     private NavigationView navigationView;
     private TextView textName, textMobileNo;
     private DrawerLayout drawer;
     private View navHeader;
     private Toolbar toolbar;
+
     // toolbar titles respected to selected nav menu item
     private String[] activityTitles;
 
@@ -69,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
             //mTextView.setText(mPref.getString(KEY_MOBILE_NUMBER, null));
         }
 
-        FirebaseDatabase.getInstance().setPersistenceEnabled(true);
+        mFirebaseDatabase = Utils.getDatabase();
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -97,6 +113,46 @@ public class MainActivity extends AppCompatActivity {
             navItemIndex = 0;
             CURRENT_TAG = TAG_HOME;
             loadHomeFragment();
+        }
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            requestLocationPermission();
+        } else {
+            Toast.makeText(this, "Granted", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void requestLocationPermission() {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)) {
+
+            Snackbar.make(drawer, "Location will give you your location",
+                    Snackbar.LENGTH_INDEFINITE)
+                    .setAction("OK", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            ActivityCompat
+                                    .requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                                            1);
+                        }
+                    })
+                    .show();
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == 1) {
+            if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Granted", Toast.LENGTH_SHORT).show();
+                recreate();
+            } else {
+                Toast.makeText(this, "Denied", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
 
@@ -234,6 +290,12 @@ public class MainActivity extends AppCompatActivity {
                         navItemIndex = 2;
                         CURRENT_TAG = TAG_INVITE;
                         break;
+                    case R.id.nav_log_out:
+                        mEditor.clear();
+                        mEditor.commit();
+                        startActivity(new Intent(MainActivity.this, LogInActivity.class));
+                        finish();
+                        return true;
                     default:
                         navItemIndex = 0;
                 }
