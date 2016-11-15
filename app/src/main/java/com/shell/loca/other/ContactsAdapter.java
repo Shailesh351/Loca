@@ -1,5 +1,7 @@
 package com.shell.loca.other;
 
+import android.content.Context;
+import android.content.Intent;
 import android.support.v7.util.SortedList;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.util.SortedListAdapterCallback;
@@ -11,6 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.shell.loca.R;
+import com.shell.loca.activity.FriendLocationActivity;
 import com.shell.loca.activity.MainActivity;
 
 /**
@@ -19,10 +22,14 @@ import com.shell.loca.activity.MainActivity;
 
 public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.ContactViewHolder> {
 
+    private Context mContext;
+
     final LayoutInflater mLayoutInflater;
     SortedList<Contact> mContacts;
 
-    public ContactsAdapter(LayoutInflater layoutInflater, Contact... items) {
+    public ContactsAdapter(Context context, LayoutInflater layoutInflater, Contact... items) {
+        mContext = context;
+
         mLayoutInflater = layoutInflater;
         mContacts = new SortedList<Contact>(Contact.class, new SortedListAdapterCallback<Contact>(this) {
             @Override
@@ -91,13 +98,17 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.Contac
         public ContactViewHolder(View itemView) {
             super(itemView);
             mTextViewName = (TextView) itemView.findViewById(R.id.listItemContactName);
-            mTextViewName.setOnClickListener(this);
+            itemView.setOnClickListener(this);
             mTextViewMobileNo = (TextView) itemView.findViewById(R.id.listItemMobileNo);
         }
 
         @Override
         public void onClick(View view) {
-            Log.d("CLick", "onClick " + getPosition() + " " + mTextViewName.getText());
+            Log.d("Click", "onClick " + getPosition() + " " + mTextViewMobileNo.getText());
+            Intent intent = new Intent(mContext,FriendLocationActivity.class);
+            intent.putExtra("mobile_no",mTextViewMobileNo.getText().toString());
+            intent.putExtra("name", mTextViewName.getText().toString());
+            mContext.startActivity(intent);
         }
 
         abstract void onDoneChanged(boolean isDone);

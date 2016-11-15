@@ -28,6 +28,8 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.shell.loca.R;
@@ -82,7 +84,9 @@ public class HomeFragment extends Fragment implements GoogleApiClient.Connection
 
         mPref = getActivity().getApplicationContext().getSharedPreferences(PREF_NAME, PRIVATE_MODE);
 
-        mUserReference = mDatabaseReference.child("users").child(mPref.getString(KEY_MOBILE_NUMBER, null));
+        if(mPref.getString(IS_LOGIN, null) != null){
+            mUserReference = mDatabaseReference.child("users").child(mPref.getString(KEY_MOBILE_NUMBER, null));
+        }
 
         if (checkPlayServices()) {
             buildGoogleApiClient();
@@ -167,30 +171,35 @@ public class HomeFragment extends Fragment implements GoogleApiClient.Connection
     }
 
     protected void startLocationUpdates() {
-        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, new com.google.android.gms.location.LocationListener() {
-            @Override
-            public void onLocationChanged(Location location) {
-                mLastLocation = location;
-                displayLocation();
-                showLocationOnMap();
-                updateLocationOnDatabase();
+        if (mGoogleApiClient.isConnected()) {
+            if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                return;
             }
-        });
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, new com.google.android.gms.location.LocationListener() {
+                @Override
+                public void onLocationChanged(Location location) {
+                    mLastLocation = location;
+                    displayLocation();
+                    showLocationOnMap();
+                    updateLocationOnDatabase();
+                }
+            });
+        }
     }
 
     protected void stopLocationUpdates() {
-        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, new com.google.android.gms.location.LocationListener() {
-            @Override
-            public void onLocationChanged(Location location) {
-                mLastLocation = location;
-                displayLocation();
-                showLocationOnMap();
-                updateLocationOnDatabase();
-            }
-        });
+
+        if (mGoogleApiClient.isConnected()) {
+            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, new com.google.android.gms.location.LocationListener() {
+                @Override
+                public void onLocationChanged(Location location) {
+                    mLastLocation = location;
+                    displayLocation();
+                    showLocationOnMap();
+                    updateLocationOnDatabase();
+                }
+            });
+        }
     }
 
     private void displayLocation() {
@@ -215,8 +224,8 @@ public class HomeFragment extends Fragment implements GoogleApiClient.Connection
         }
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
         if (mLastLocation != null) {
-            mUserReference.child("last_location").child("latitude").setValue(mLastLocation.getLatitude());
-            mUserReference.child("last_location").child("longitude").setValue(mLastLocation.getLongitude());
+            mUserReference.child("latitude").setValue(mLastLocation.getLatitude());
+            mUserReference.child("longitude").setValue(mLastLocation.getLongitude());
             mUserReference.child("last_location_update_time").setValue(Calendar.getInstance().getTime().toString());
             Toast.makeText(getActivity(), "Location updated", Toast.LENGTH_LONG)
                     .show();
@@ -230,12 +239,7 @@ public class HomeFragment extends Fragment implements GoogleApiClient.Connection
                 return;
             }
 
-            if (mapZoomLevel == map.getCameraPosition().zoom) {
-                map.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, mapZoomLevel));
-            } else {
-                map.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, mapZoomLevel));
-                mapZoomLevel = map.getCameraPosition().zoom;
-            }
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, mapZoomLevel));
 
             map.clear();
             map.addMarker(new MarkerOptions()
@@ -308,4 +312,5 @@ public class HomeFragment extends Fragment implements GoogleApiClient.Connection
         map.getUiSettings().setMyLocationButtonEnabled(true);
         map.getUiSettings().setRotateGesturesEnabled(true);
     }
+
 }
