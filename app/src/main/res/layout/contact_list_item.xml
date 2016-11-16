@@ -3,18 +3,20 @@
               android:orientation="vertical"
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
-              android:layout_margin="2dp">
+              android:layout_marginBottom="1dp">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:paddingLeft="12dp"
         android:orientation="vertical">
 
         <TextView
             android:id="@+id/listItemContactName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="6dp"
-            android:textSize="24sp"
+            android:layout_marginTop="6dp"
+            android:layout_marginLeft="6dp"
+            android:textSize="22sp"
             android:text="Name"/>
 
         <TextView

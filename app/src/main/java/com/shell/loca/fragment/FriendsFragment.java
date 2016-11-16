@@ -2,6 +2,7 @@ package com.shell.loca.fragment;
 
 import android.Manifest;
 import android.content.ContentResolver;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -15,6 +16,9 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
@@ -25,8 +29,12 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.shell.loca.R;
+import com.shell.loca.activity.AllFriendsLocationActivity;
+import com.shell.loca.activity.FriendLocationActivity;
 import com.shell.loca.other.Contact;
+import com.shell.loca.other.ContactViewHolder;
 import com.shell.loca.other.ContactsAdapter;
+import com.shell.loca.other.ItemClickSupport;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,6 +56,14 @@ public class FriendsFragment extends Fragment {
 
     private ContactsAdapter mAdapter;
 
+    private ArrayList<Contact> mContacts;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -68,15 +84,26 @@ public class FriendsFragment extends Fragment {
 
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.READ_CONTACTS}, 1);
-        }else {
+        } else {
             getContactsList();
         }
 
-        mAdapter = new ContactsAdapter(getContext(),getLayoutInflater(null), null);
+        mAdapter = new ContactsAdapter(getContext(), getLayoutInflater(null), null);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity().getApplicationContext());
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.setAdapter(mAdapter);
+
+        ItemClickSupport.addTo(mRecyclerView).setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
+            @Override
+            public void onItemClicked(RecyclerView recyclerView, int position, View v) {
+                ContactViewHolder holder = (ContactViewHolder) recyclerView.findViewHolderForAdapterPosition(position);
+                Intent intent = new Intent(getActivity(), FriendLocationActivity.class);
+                intent.putExtra("mobile_no", holder.mTextViewMobileNo.getText().toString());
+                intent.putExtra("name", holder.mTextViewName.getText().toString());
+                getActivity().startActivity(intent);
+            }
+        });
 
     }
 
@@ -95,8 +122,8 @@ public class FriendsFragment extends Fragment {
     }
 
     private void getContactsList() {
-        final ArrayList<Contact> mContacts = new ArrayList<>();
-        mContacts.add(new Contact(mPref.getString(KEY_NAME, null),mPref.getString(KEY_MOBILE_NUMBER, null)));
+        mContacts = new ArrayList<>();
+        mContacts.add(new Contact(mPref.getString(KEY_NAME, null), mPref.getString(KEY_MOBILE_NUMBER, null)));
 
         ContentResolver cr = getActivity().getContentResolver();
         Cursor contacts = cr.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
@@ -128,8 +155,8 @@ public class FriendsFragment extends Fragment {
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             if (dataSnapshot.getValue() != null) {
                                 //user exists
-                                if (!isContainsContact(mContacts,finalPhoneNumber)) {
-                                    mAdapter.addItem(new Contact(name,finalPhoneNumber));
+                                if (!isContainsContact(mContacts, finalPhoneNumber)) {
+                                    mAdapter.addItem(new Contact(name, finalPhoneNumber));
                                     mContacts.add(new Contact(name, finalPhoneNumber));
                                 }
                             }
@@ -149,5 +176,26 @@ public class FriendsFragment extends Fragment {
             }
         }
         return false;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.friends_fragment_menu, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()) {
+            case R.id.menu_item_show_all:
+                Intent intent = new Intent(getActivity(), AllFriendsLocationActivity.class);
+                intent.putExtra("contacts_list", mContacts);
+                getActivity().startActivity(intent);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+
     }
 }

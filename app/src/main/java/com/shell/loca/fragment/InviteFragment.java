@@ -2,9 +2,11 @@ package com.shell.loca.fragment;
 
 import android.Manifest;
 import android.content.ContentResolver;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
@@ -25,8 +27,11 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.shell.loca.R;
+import com.shell.loca.activity.FriendLocationActivity;
 import com.shell.loca.other.Contact;
+import com.shell.loca.other.ContactViewHolder;
 import com.shell.loca.other.ContactsAdapter;
+import com.shell.loca.other.ItemClickSupport;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,6 +82,18 @@ public class InviteFragment extends Fragment {
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.setAdapter(mAdapter);
+
+        ItemClickSupport.addTo(mRecyclerView).setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
+            @Override
+            public void onItemClicked(RecyclerView recyclerView, int position, View v) {
+                ContactViewHolder holder = (ContactViewHolder) recyclerView.findViewHolderForAdapterPosition(position);
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse("sms:"));
+                intent.putExtra("sms_body", "Hi, this is cool app to share location to friends ");
+                intent.putExtra("address",holder.mTextViewMobileNo.getText().toString());
+                getActivity().startActivity(intent);
+            };
+        });
     }
 
     @Override

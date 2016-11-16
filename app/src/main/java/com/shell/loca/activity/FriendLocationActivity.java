@@ -3,10 +3,10 @@ package com.shell.loca.activity;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
@@ -25,7 +25,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.shell.loca.R;
 
-public class FriendLocationActivity extends AppCompatActivity implements OnMapReadyCallback ,ValueEventListener{
+public class FriendLocationActivity extends AppCompatActivity implements OnMapReadyCallback, ValueEventListener {
 
     private Intent mIntent;
     private String mobileNo, latitude, longitude, name, lastLocationUpdateTime;
@@ -53,7 +53,7 @@ public class FriendLocationActivity extends AppCompatActivity implements OnMapRe
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onBackPressed();
+                finish();
             }
         });
 
@@ -92,10 +92,11 @@ public class FriendLocationActivity extends AppCompatActivity implements OnMapRe
         mDatabaseReference.child("users").child(mobileNo).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                if(dataSnapshot.getValue() == null){
+                if (dataSnapshot.getValue() == null) {
                     finish();
                 }
             }
+
             @Override
             public void onCancelled(DatabaseError databaseError) {
 
@@ -107,7 +108,7 @@ public class FriendLocationActivity extends AppCompatActivity implements OnMapRe
         showLocationOnMap();
     }
 
-    private void requestLocationData(){
+    private void requestLocationData() {
         mFriendReference.child("latitude").addValueEventListener(this);
         mFriendReference.child("longitude").addValueEventListener(this);
         mFriendReference.child("last_location_update_time").addValueEventListener(this);
@@ -127,10 +128,10 @@ public class FriendLocationActivity extends AppCompatActivity implements OnMapRe
 
             map.clear();
             map.addMarker(new MarkerOptions()
-                    .title(name+"'s location")
-                    .snippet("at "+ lastLocationUpdateTime)
-                    .position(latlng));
-        }else {
+                    .title(name + "'s location")
+                    .snippet("at " + lastLocationUpdateTime)
+                    .position(latlng)).showInfoWindow();
+        } else {
             requestLocationData();
         }
     }
@@ -168,7 +169,7 @@ public class FriendLocationActivity extends AppCompatActivity implements OnMapRe
 
     @Override
     public void onDataChange(DataSnapshot dataSnapshot) {
-        if(dataSnapshot.getValue() != null) {
+        if (dataSnapshot.getValue() != null) {
             switch (dataSnapshot.getKey()) {
                 case "latitude":
                     latitude = dataSnapshot.getValue().toString();

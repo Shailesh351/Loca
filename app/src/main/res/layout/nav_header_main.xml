@@ -3,7 +3,7 @@
               android:id="@+id/nav_header_root"
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
-              android:background="#3E50B4"
+              android:background="#bf1913"
               android:orientation="vertical"
               android:paddingBottom="@dimen/activity_vertical_margin"
               android:paddingLeft="@dimen/activity_horizontal_margin"

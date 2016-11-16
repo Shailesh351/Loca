@@ -20,7 +20,7 @@ import com.shell.loca.activity.MainActivity;
  * Created by shell on 11/11/16.
  */
 
-public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.ContactViewHolder> {
+public class ContactsAdapter extends RecyclerView.Adapter<ContactViewHolder> {
 
     private Context mContext;
 
@@ -90,28 +90,6 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.Contac
         } else {
             return 0;
         }
-    }
-
-    public abstract class ContactViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        TextView mTextViewName, mTextViewMobileNo;
-
-        public ContactViewHolder(View itemView) {
-            super(itemView);
-            mTextViewName = (TextView) itemView.findViewById(R.id.listItemContactName);
-            itemView.setOnClickListener(this);
-            mTextViewMobileNo = (TextView) itemView.findViewById(R.id.listItemMobileNo);
-        }
-
-        @Override
-        public void onClick(View view) {
-            Log.d("Click", "onClick " + getPosition() + " " + mTextViewMobileNo.getText());
-            Intent intent = new Intent(mContext,FriendLocationActivity.class);
-            intent.putExtra("mobile_no",mTextViewMobileNo.getText().toString());
-            intent.putExtra("name", mTextViewName.getText().toString());
-            mContext.startActivity(intent);
-        }
-
-        abstract void onDoneChanged(boolean isDone);
     }
 }
 
