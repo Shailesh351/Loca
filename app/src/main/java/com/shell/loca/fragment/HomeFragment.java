@@ -28,8 +28,6 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.shell.loca.R;
@@ -39,17 +37,15 @@ import java.util.Calendar;
 public class HomeFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener, OnMapReadyCallback {
 
-    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
-
     public static final String PREF_NAME = "LOCA";
     public static final String IS_LOGIN = "is_logged_in";
     public static final String KEY_MOBILE_NUMBER = "user_mobile_number";
     public static final String KEY_NAME = "user_name";
-    int PRIVATE_MODE = 0;
-
+    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
     private static int UPDATE_INTERVAL = 5000;
     private static int FATEST_INTERVAL = 500;
     private static int DISPLACEMENT = 1;
+    int PRIVATE_MODE = 0;
     private LocationRequest mLocationRequest;
     private Location mLastLocation;
     private GoogleApiClient mGoogleApiClient;
@@ -84,7 +80,7 @@ public class HomeFragment extends Fragment implements GoogleApiClient.Connection
 
         mPref = getActivity().getApplicationContext().getSharedPreferences(PREF_NAME, PRIVATE_MODE);
 
-        if(mPref.getString(IS_LOGIN, null) != null){
+        if (mPref.getString(IS_LOGIN, null) != null) {
             mUserReference = mDatabaseReference.child("users").child(mPref.getString(KEY_MOBILE_NUMBER, null));
         }
 
@@ -218,7 +214,7 @@ public class HomeFragment extends Fragment implements GoogleApiClient.Connection
         }
     }
 
-    private void updateLocationOnDatabase(){
+    private void updateLocationOnDatabase() {
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
